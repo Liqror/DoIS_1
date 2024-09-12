@@ -1,0 +1,16 @@
+Пользователь выбрал действие: 1
+Пользователь ввел URL: https://pokeapi.co/api/v2/ability/1
+Программа получает данные по URL: https://pokeapi.co/api/v2/ability/1
+Данные успешно получены
+Пользователь выбрал действие: 2
+Пользователь ввел путь к файлу: D:\Development-of-integration-systems\lab_1_1\1.txt
+Программа считывает данные из файла: D:\Development-of-integration-systems\lab_1_1\1.txt
+Данные успешно получены
+Пользователь выбрал действие: 0
+Пользователь завершил программу.
+Пользователь выбрал действие: 1
+Пользователь ввел URL: D:\Development-of-integration-systems\lab_1_1\1.txt
+Программа получает данные по URL: D:\Development-of-integration-systems\lab_1_1\1.txt
+Ошибка при получении данных: unknown protocol: d
+Пользователь выбрал действие: 0
+Пользователь завершил программу.
