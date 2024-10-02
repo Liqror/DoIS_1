@@ -85,7 +85,8 @@ public class Main {
                             Object jsonData = jsonReader.readJsonFromUrl(url);
 
                             try {
-                                String tableName = url.replaceAll("[^a-zA-Z0-9]", "_");  // Генерация имени таблицы на основе URL
+                                String tableName = url.replaceAll("[^a-zA-Z0-9]", "_"); // Генерация имени таблицы на основе URL
+                                System.out.println("Имя таблицы: " + tableName);
 
                                 if (jsonData instanceof JSONObject) {
                                     JSONObject jsonObject = (JSONObject) jsonData;

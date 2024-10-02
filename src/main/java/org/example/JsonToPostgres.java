@@ -29,8 +29,11 @@ public class JsonToPostgres {
                 dataType = "BOOLEAN";
             }
 
+            // Замена дефисов на подчеркивания
+            String columnName = key.replace("-", "_");
+
             // Добавление колонки в SQL запрос
-            createTableSQL.append(key).append(" ").append(dataType).append(", ");
+            createTableSQL.append(columnName).append(" ").append(dataType).append(", ");
         }
 
         // Удаление последней запятой и добавление закрывающей скобки
@@ -63,24 +66,45 @@ public class JsonToPostgres {
         }
     }
 
-    private static void insertDataIntoTable(Connection conn, String tableName, JSONObject jsonObject) throws SQLException {
+    public static void insertDataIntoTable(Connection conn, String tableName, JSONObject jsonObject) throws SQLException {
+        // Формируем SQL-запрос на вставку данных
         StringBuilder insertSQL = new StringBuilder("INSERT INTO " + tableName + " (");
         StringBuilder valuesSQL = new StringBuilder("VALUES (");
 
-        Set<String> keys = jsonObject.keySet();
-        for (String key : keys) {
-            insertSQL.append(key).append(", ");
-            valuesSQL.append("'").append(jsonObject.get(key).toString().replace("'", "''")).append("', ");
+        for (String key : jsonObject.keySet()) {
+            String columnName = key.replace("-", "_"); // Заменяем дефисы
+            insertSQL.append(columnName).append(", ");
+
+            Object value = jsonObject.get(key);
+            if (value instanceof String) {
+                valuesSQL.append("'").append(value).append("', ");
+            } else if (value instanceof Integer || value instanceof Double || value instanceof Boolean) {
+                valuesSQL.append(value).append(", ");
+            } else if (value instanceof JSONArray) {
+                // Преобразуем JSONArray в строку формата JSON
+                valuesSQL.append("'").append(((JSONArray) value).toString()).append("', ");
+            } else {
+                // Если тип данных неизвестен, сохраняем его как строку
+                valuesSQL.append("'").append(value.toString()).append("', ");
+            }
         }
 
-        // Удаление последней запятой и добавление закрывающих скобок
+        // Убираем последние запятые
         insertSQL.setLength(insertSQL.length() - 2);
         valuesSQL.setLength(valuesSQL.length() - 2);
-        insertSQL.append(") ").append(valuesSQL.append(");"));
 
-        // Выполнение SQL запроса
+        // Завершаем запросы
+        insertSQL.append(") ");
+        valuesSQL.append(");");
+
+        String finalSQL = insertSQL.toString() + valuesSQL.toString();
+
+        // Выводим полный SQL-запрос на вставку
+//        System.out.println("SQL-запрос на вставку данных: " + finalSQL);
+
+        // Выполняем запрос
         try (Statement stmt = conn.createStatement()) {
-            stmt.execute(insertSQL.toString());
+            stmt.execute(finalSQL);
         }
     }
 
