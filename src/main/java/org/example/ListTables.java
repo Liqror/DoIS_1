@@ -44,4 +44,36 @@ public class ListTables {
         }
     }
 
+    public static void printAllTables(Connection conn) throws SQLException {
+        String sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'";
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            System.out.println("Список всех таблиц:");
+            while (rs.next()) {
+                String tableName = rs.getString("table_name");
+                System.out.println("- " + tableName);
+            }
+        }
+    }
+
+    public static void deleteAllTables(Connection conn) throws SQLException {
+        String sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'";
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            System.out.println("Удаление всех таблиц...");
+            while (rs.next()) {
+                String tableName = rs.getString("table_name");
+                String dropSQL = "DROP TABLE IF EXISTS " + tableName + " CASCADE";
+                try (Statement dropStmt = conn.createStatement()) {
+                    dropStmt.execute(dropSQL);
+                    System.out.println("Таблица " + tableName + " удалена.");
+                }
+            }
+        }
+    }
+
 }

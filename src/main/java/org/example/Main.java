@@ -38,9 +38,8 @@ public class Main {
                 System.out.println("Выберите действие:");
                 System.out.println("1. Получение данных по URL");
                 System.out.println("2. Получение данных из файла");
-                System.out.println("3. Вывести все таблицы (только названия)");
+                System.out.println("3. Вывести все таблицы");
                 System.out.println("4. Удалить все таблицы");
-//                System.out.println("3. Получение данных из файла со всеми ссылками");
                 System.out.println("0. Выход из программы");
                 System.out.println("__________________________________________");
                 System.out.print("Введите число: ");
@@ -155,23 +154,20 @@ public class Main {
                         break;
 
                     case 3:
-                        // Вывод всех таблиц (только названия)
-                        System.out.println("Список таблиц в базе данных:");
-//                        List<String> tableNames = ListTables.getAllTableNames(conn);
-//                        for (String tableName : tableNames) {
-//                            System.out.println(tableName);
-//                        }
+                        // Вывод всех таблиц
+                        try {
+                            ListTables.printAllTables(conn);
+                        } catch (SQLException e) {
+                            System.err.println("Ошибка при выводе таблиц: " + e.getMessage());
+                        }
                         break;
 
                     case 4:
                         // Удаление всех таблиц
-                        System.out.println("Все таблицы будут удалены. Подтвердите действие (y/n): ");
-                        String confirmation = scanner.nextLine();
-                        if (confirmation.equalsIgnoreCase("y")) {
-//                            ListTables.deleteAllTables(conn);
-                            System.out.println("Все таблицы были успешно удалены.");
-                        } else {
-                            System.out.println("Операция отменена.");
+                        try {
+                            ListTables.deleteAllTables(conn);
+                        } catch (SQLException e) {
+                            System.err.println("Ошибка при удалении таблиц: " + e.getMessage());
                         }
                         break;
 
