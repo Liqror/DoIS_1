@@ -4,91 +4,84 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import java.sql.Connection;
 import java.sql.Statement;
-import java.util.Iterator;
+import java.util.*;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class JsonToPostgres {
-
-    // Метод для создания таблицы из JSON-объекта
     public static void createTableFromJsonObject(Connection conn, String tableName, JSONObject jsonObject) throws SQLException {
-        Statement stmt = conn.createStatement();
-        StringBuilder createQuery = new StringBuilder("CREATE TABLE IF NOT EXISTS " + tableName + " (");
+        // Получение ключей из JSON объекта
+        Set<String> keys = jsonObject.keySet();
 
-        // Проходим по всем ключам JSON объекта и создаем столбцы
-        for (String key : jsonObject.keySet()) {
+        // Формирование SQL запроса для создания таблицы
+        StringBuilder createTableSQL = new StringBuilder("CREATE TABLE IF NOT EXISTS " + tableName + " (");
+
+        for (String key : keys) {
+            // Пример определения типа данных (возможно, нужно будет доработать)
+            String dataType = "TEXT"; // По умолчанию тип данных текст
+
             Object value = jsonObject.get(key);
-            String columnType = "TEXT";  // Простое отображение всех данных как текст
-
-            createQuery.append(key).append(" ").append(columnType).append(", ");
-        }
-
-        createQuery.delete(createQuery.length() - 2, createQuery.length());  // Убираем последнюю запятую
-        createQuery.append(")");
-
-//        System.out.println("Создание таблицы: " + createQuery);  // Логирование SQL-запроса
-        stmt.executeUpdate(createQuery.toString());
-        stmt.close();
-
-        // Вставляем данные, если это требуется
-        insertIntoTable(conn, tableName, jsonObject); // Вставляем данные из JSON-объекта
-    }
-
-
-    // Метод для определения типа данных
-    private static String determineDataType(Object value) {
-        if (value instanceof Number) {
-            return "BIGINT"; // Или "INTEGER", в зависимости от вашего выбора
-        } else if (value instanceof String) {
-            return "TEXT";
-        } else if (value instanceof JSONArray) {
-            return "TEXT"; // Или создайте отдельную таблицу для массивов
-        }
-        return "TEXT"; // По умолчанию
-    }
-
-    // Метод для вставки данных из JSON-объекта в таблицу
-    public static void insertIntoTable(Connection conn, String tableName, JSONObject jsonObject) throws SQLException {
-        Statement stmt = conn.createStatement();
-        StringBuilder insertQuery = new StringBuilder("INSERT INTO " + tableName + " (");
-
-        // Проходим по ключам и подготавливаем SQL для вставки данных
-        StringBuilder valuesPart = new StringBuilder(" VALUES (");
-
-        for (String key : jsonObject.keySet()) {
-            insertQuery.append(key).append(", ");
-            Object value = jsonObject.get(key);
-
-            // Обрабатываем значения в зависимости от их типа
-            if (value instanceof JSONArray) {
-                valuesPart.append("'").append(value.toString()).append("', "); // Обрабатываем массив как строку
-            } else {
-                valuesPart.append("'").append(value).append("', ");
+            if (value instanceof Integer) {
+                dataType = "INTEGER";
+            } else if (value instanceof Double) {
+                dataType = "DOUBLE PRECISION";
+            } else if (value instanceof Boolean) {
+                dataType = "BOOLEAN";
             }
+
+            // Добавление колонки в SQL запрос
+            createTableSQL.append(key).append(" ").append(dataType).append(", ");
         }
 
-        insertQuery.delete(insertQuery.length() - 2, insertQuery.length());  // Убираем последнюю запятую
-        valuesPart.delete(valuesPart.length() - 2, valuesPart.length());  // Убираем последнюю запятую
+        // Удаление последней запятой и добавление закрывающей скобки
+        createTableSQL.setLength(createTableSQL.length() - 2);
+        createTableSQL.append(");");
 
-        insertQuery.append(")").append(valuesPart).append(")");
+        // Выполнение SQL запроса
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute(createTableSQL.toString());
+        }
 
-        System.out.println("Вставка данных: " + insertQuery);  // Логирование SQL-запроса
-        stmt.executeUpdate(insertQuery.toString());
-        stmt.close();
+        // Вставка данных в таблицу
+        insertDataIntoTable(conn, tableName, jsonObject);
     }
 
-    // Метод для создания таблицы из массива JSON
     public static void createTableFromJsonArray(Connection conn, String tableName, JSONArray jsonArray) throws SQLException {
-        if (jsonArray.length() == 0) return;  // Если массив пустой, ничего не делаем
+        if (jsonArray.length() == 0) {
+            System.out.println("Массив JSON пуст, таблица не будет создана.");
+            return;
+        }
 
+        // Предполагаем, что структура всех объектов в массиве одинакова
         JSONObject firstObject = jsonArray.getJSONObject(0);
         createTableFromJsonObject(conn, tableName, firstObject);
 
-        // Вставляем все объекты из массива в таблицу
+        // Вставка данных в таблицу
         for (int i = 0; i < jsonArray.length(); i++) {
-            insertIntoTable(conn, tableName, jsonArray.getJSONObject(i));
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            insertDataIntoTable(conn, tableName, jsonObject);
         }
     }
+
+    private static void insertDataIntoTable(Connection conn, String tableName, JSONObject jsonObject) throws SQLException {
+        StringBuilder insertSQL = new StringBuilder("INSERT INTO " + tableName + " (");
+        StringBuilder valuesSQL = new StringBuilder("VALUES (");
+
+        Set<String> keys = jsonObject.keySet();
+        for (String key : keys) {
+            insertSQL.append(key).append(", ");
+            valuesSQL.append("'").append(jsonObject.get(key).toString().replace("'", "''")).append("', ");
+        }
+
+        // Удаление последней запятой и добавление закрывающих скобок
+        insertSQL.setLength(insertSQL.length() - 2);
+        valuesSQL.setLength(valuesSQL.length() - 2);
+        insertSQL.append(") ").append(valuesSQL.append(");"));
+
+        // Выполнение SQL запроса
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute(insertSQL.toString());
+        }
+    }
+
 }

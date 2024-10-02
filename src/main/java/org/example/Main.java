@@ -89,7 +89,7 @@ public class Main {
 
                                 if (jsonData instanceof JSONObject) {
                                     JSONObject jsonObject = (JSONObject) jsonData;
-//                                    System.out.println("Данные получены успешно (JSONObject)!");
+                                    System.out.println("Данные получены успешно (JSONObject)!");
 //                                    System.out.println(jsonObject.toString(2));
                                     logWriter.println(now.format(formatter) + " Данные успешно получены (JSONObject)");
 
@@ -98,7 +98,7 @@ public class Main {
 
                                 } else if (jsonData instanceof JSONArray) {
                                     JSONArray jsonArray = (JSONArray) jsonData;
-//                                    System.out.println("Данные получены успешно (JSONArray)!");
+                                    System.out.println("Данные получены успешно (JSONArray)!");
 //                                    System.out.println(jsonArray.toString(2));  // Вывод массива JSON
                                     logWriter.println(now.format(formatter) + " Данные успешно получены (JSONArray)");
 
@@ -156,10 +156,10 @@ public class Main {
                     case 3:
                         // Вывод всех таблиц (только названия)
                         System.out.println("Список таблиц в базе данных:");
-                        List<String> tableNames = ListTables.getAllTableNames(conn);
-                        for (String tableName : tableNames) {
-                            System.out.println(tableName);
-                        }
+//                        List<String> tableNames = ListTables.getAllTableNames(conn);
+//                        for (String tableName : tableNames) {
+//                            System.out.println(tableName);
+//                        }
                         break;
 
                     case 4:
@@ -167,7 +167,7 @@ public class Main {
                         System.out.println("Все таблицы будут удалены. Подтвердите действие (y/n): ");
                         String confirmation = scanner.nextLine();
                         if (confirmation.equalsIgnoreCase("y")) {
-                            ListTables.deleteAllTables(conn);
+//                            ListTables.deleteAllTables(conn);
                             System.out.println("Все таблицы были успешно удалены.");
                         } else {
                             System.out.println("Операция отменена.");
